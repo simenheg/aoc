@@ -61,17 +61,18 @@
 (defun invert-bits (bits)
   (mapcar (lambda (x) (if (= x 0) 1 0)) bits))
 
-(defun avg-weights (file)
-  (let* ((in (slurp file))
-         (n (float (length in)))
-         (decoded (mapcar
-                   (lambda (line)
-                     (mapcar (lambda (c) (string-to-number (char-to-string c))) line))
-                   in)))
-    (apply #'seq-mapn (lambda (&rest x) (/ (apply #'+ x) n)) decoded)))
+(defun bit-matrix-from-file (file)
+  (mapcar
+   (lambda (line)
+     (mapcar (lambda (c) (string-to-number (char-to-string c))) line))
+   (slurp file)))
+
+(defun weights (bit-matrix)
+  (let ((n (float (length bit-matrix))))
+    (apply #'seq-mapn (lambda (&rest x) (/ (apply #'+ x) n)) bit-matrix)))
 
 (defun part1 (file)
-  (let* ((avgs (avg-weights file))
+  (let* ((avgs (weights (bit-matrix-from-file file)))
          (gamma-bits (mapcar (lambda (x) (if (> x 0.5) 1 0)) avgs)))
     (* (bits-to-dec gamma-bits)
        (bits-to-dec (invert-bits gamma-bits)))))
@@ -161,3 +162,21 @@
 ;; oxygen generator rating and CO2 scrubber rating, then multiply them
 ;; together. What is the life support rating of the submarine? (Be
 ;; sure to represent your answer in decimal, not binary.)
+
+(defun narrow (candidates comp)
+  (let ((i 0))
+    (while (> (length candidates) 1)
+      (let ((avg (nth i (weights candidates))))
+        (setq candidates
+              (seq-filter
+               (lambda (el)
+                 (funcall comp (nth i el)))
+               candidates))
+        (cl-incf i)))
+    (bits-to-dec (car candidates))))
+
+(defun part2 (file)
+  (let ((candidates (bit-matrix-from-file file)))
+    (*
+     (narrow candidates (lambda (x) (= x (if (>= avg 0.5) 1 0))))
+     (narrow candidates (lambda (x) (= x (if (< avg 0.5) 1 0)))))))
