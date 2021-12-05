@@ -122,3 +122,18 @@
           (when (winner-board board)
             (setq winner board)))))
     (score winner)))
+
+(defun part2 (file)
+  (setq draw '())
+  (setq drawn '())
+  (let ((in (slurp file))
+        (prev-winner nil))
+    (setq draw (mapcar #'string-to-number (split-string (car in) ",")))
+    (let ((boards (parse (cddr in))))
+      (while draw
+        (push (pop draw) drawn)
+        (dolist (board boards)
+          (when (winner-board board)
+            (setq prev-winner (score board))
+            (setq boards (delete board boards))))))
+    prev-winner))
