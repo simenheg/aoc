@@ -1,7 +1,11 @@
-;; (cl-loop for x on (mapcar #'string-to-number (split-string (buffer-string) "\n"))
-;;          count (> (or (cadr x) 0) (car x)))
+(defun slurp (file)
+  (with-open-file (s file)
+    (loop for line = (read-line s nil)
+          while line
+          collect line)))
 
-(load "util.lisp")
+(defun slurp-numbers (file)
+  (mapcar #'parse-integer (slurp file)))
 
 (defun count-increasing (lst)
   (loop for x on lst count (> (or (cadr x) 0) (or (car x) 0))))
