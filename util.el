@@ -1,6 +1,7 @@
 (require 'cl-lib)
 (require 'map)
 (require 'seq)
+(require 'subr-x)
 
 (defun slurp (file)
   (with-temp-buffer
@@ -21,6 +22,10 @@
         (string-to-number (char-to-string char)))
       (string-to-list line)))
    (slurp file)))
+
+(defun mref (matrix x y)
+  (when (and (<= 0 x) (<= 0 y))
+    (elt (elt matrix y) x)))
 
 (defun transpose (matrix)
   (apply #'seq-mapn (lambda (&rest x) x) matrix))

@@ -41,10 +41,6 @@
 ;; Find all of the low points on your heightmap. What is the sum of
 ;; the risk levels of all low points on your heightmap?
 
-(defun mref (matrix x y)
-  (when (and (<= 0 x) (<= 0 y))
-    (elt (elt matrix y) x)))
-
 (defun adjacent (matrix x y)
   (seq-filter
    #'identity
