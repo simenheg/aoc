@@ -3,10 +3,17 @@
 (require 'seq)
 (require 'subr-x)
 
+(defun split-lines (s) (split-string s "\n"))
+
+(defun slurp-raw (file)
+  (with-temp-buffer
+    (insert-file-contents file)
+    (string-trim (buffer-string))))
+
 (defun slurp (file)
   (with-temp-buffer
     (insert-file-contents file)
-    (split-string (string-trim (buffer-string)) "\n")))
+    (split-lines (string-trim (buffer-string)))))
 
 (defun slurp-numbers (file)
   (with-temp-buffer
