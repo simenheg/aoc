@@ -50,9 +50,6 @@
 ;; What is the fewest steps required to move from your current
 ;; position to the location that should get the best signal?
 
-(defun x (coord) (car coord))
-(defun y (coord) (cadr coord))
-
 (defun find (char G)
   (let* ((y (seq-position G char (lambda (e elt) (member elt e))))
          (x (seq-position (elt G y) char)))

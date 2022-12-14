@@ -45,3 +45,6 @@
 
 (defun sum (list)
   (cl-reduce #'+ list))
+
+(defun x (point) (car point))
+(defun y (point) (cadr point))

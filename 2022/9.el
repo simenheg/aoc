@@ -88,9 +88,6 @@
 ;; Simulate your complete hypothetical series of motions. How many
 ;; positions does the tail of the rope visit at least once?
 
-(defun x (point) (car point))
-(defun y (point) (cadr point))
-
 (defun dir (dir)
   (pcase dir
     ("U" '(0 1)) ("R" '(1 0)) ("D" '(0 -1)) ("L" '(-1 0))))
