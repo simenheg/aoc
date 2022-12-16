@@ -155,3 +155,66 @@
           (unless (gethash `(,x ,y) beacons)
             (cl-incf count))))
       count)))
+
+;; Your handheld device indicates that the distress signal is coming
+;; from a beacon nearby. The distress beacon is not detected by any
+;; sensor, but the distress beacon must have x and y coordinates each
+;; no lower than 0 and no larger than 4000000.
+
+;; To isolate the distress beacon's signal, you need to determine its
+;; tuning frequency, which can be found by multiplying its x
+;; coordinate by 4000000 and then adding its y coordinate.
+
+;; In the example above, the search space is smaller: instead, the x
+;; and y coordinates can each be at most 20. With this reduced search
+;; area, there is only a single position that could have a beacon:
+;; x=14, y=11. The tuning frequency for this distress beacon is
+;; 56000011.
+
+;; Find the only possible position for the distress beacon. What is
+;; its tuning frequency?
+
+(defun sensor-border (s lim)
+  (let ((x (sensor-x s))
+        (y (sensor-y s))
+        (dist (sensor-dist s))
+        (res '()))
+    (catch 'break
+      (dotimes (i (+ dist 1))
+        (let ((px (+ x i))
+              (py (+ (- y dist) i -1)))
+          (when (or (< px 0) (< py 0) (> px lim) (> py lim))
+            (throw 'break t))
+          (push `(,px ,py) res))))
+    (catch 'break
+      (dotimes (i dist)
+        (let ((px (- (+ x dist 1) i))
+              (py (+ y i)))
+          (when (or (< px 0) (< py 0) (> px lim) (> py lim))
+            (throw 'break t))
+          (push `(,px ,py) res))))
+    (catch 'break
+      (dotimes (i (+ dist 1))
+        (let ((px (- x i 1))
+              (py (- (+ y dist) i)))
+          (when (or (< px 0) (< py 0) (> px lim) (> py lim))
+            (throw 'break t))
+          (push `(,px ,py) res))))
+    (catch 'break
+      (dotimes (i dist)
+        (let ((px (+ (- x dist) i))
+              (py (- y 1 i)))
+          (when (or (< px 0) (< py 0) (> px lim) (> py lim))
+            (throw 'break t))
+          (push `(,px ,py) res))))
+    res))
+
+(defun part2 (file lim)
+  (pcase-let ((`(,sensors ,beacons) (parse file)))
+    (let ((p (catch 'done
+               (dolist (sensor sensors)
+                 (dolist (p (sensor-border sensor lim))
+                   (when (not (seq-some (lambda (s) (within-reach-p `(,(x p) ,(y p)) s)) sensors))
+                     (unless (gethash `(,(x p) ,(y p)) beacons)
+                       (throw 'done p))))))))
+      (+ (* (x p) 4000000) (y p)))))
