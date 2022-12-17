@@ -46,5 +46,9 @@
 (defun sum (list)
   (cl-reduce #'+ list))
 
+(defun make-circular (list)
+  (setf (cdr (last list)) list)
+  list)
+
 (defun x (point) (car point))
 (defun y (point) (cadr point))
