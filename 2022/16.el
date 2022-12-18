@@ -89,3 +89,59 @@
                   (push n-next Q))))))
         (puthash next t seen))
       best)))
+
+;; You're worried that even with an optimal approach, the pressure
+;; released won't be enough. What if you got one of the elephants to
+;; help you?
+
+;; It would take you 4 minutes to teach an elephant how to open the
+;; right valves in the right order, leaving you with only 26 minutes
+;; to actually execute your plan. Would having two of you working
+;; together be better, even if it means having less time? (Assume that
+;; you teach the elephant before opening any valves yourself, giving
+;; you both the same full 26 minutes.)
+
+;; With you and an elephant working together for 26 minutes, what is
+;; the most pressure you could release?
+
+(defun part2 (file time)
+  (let ((valves (make-hash-table :test #'equal))
+        (candidates '()))
+    (pcase-dolist (`(,id ,rate ,to) (mapcar #'parse-line (slurp file)))
+      (puthash id `(,rate ,to) valves)
+      (when (> rate 0) (push id candidates)))
+    (let* ((Q `(("AA" "AA" 0 ,time ,candidates nil nil)))
+           (best-at (make-hash-table :test #'equal))
+           (best 0))
+      (while-let ((next (pop Q)))
+        (pcase-let ((`(,pid ,eid ,rate ,time ,cand ,pbusy ,ebusy) next))
+          (if (or (null cand) (>= 1 time))
+              (setq best (max best rate))
+            (dolist (pto (cadr (gethash pid valves)))
+              (dolist (eto (cadr (gethash eid valves)))
+                (let ((nrate rate) (npbusy pbusy) (nebusy ebusy) (ncand cand))
+                  (cond
+                   (npbusy
+                    (setq pto pid)
+                    (setq npbusy nil))
+                   ((member pid ncand)
+                    (setq npbusy t)
+                    (setq ncand (remove pid ncand))
+                    (setq nrate (+ nrate (* (- time 1) (car (gethash pid valves)))))))
+                  (cond
+                   (nebusy
+                    (setq eto eid)
+                    (setq nebusy nil))
+                   ((member eid ncand)
+                    (setq nebusy t)
+                    (setq ncand (remove eid ncand))
+                    (setq nrate (+ nrate (* (- time 1) (car (gethash eid valves)))))))
+                  (let ((n-next `(,pto ,eto ,nrate ,(- time 1) ,ncand ,npbusy ,nebusy))
+                        (best-seen (gethash `(,pto ,eto ,(- time 1)) best-at)))
+                    (if best-seen
+                        (when (< best-seen nrate)
+                          (puthash `(,pto ,eto ,(- time 1)) nrate best-at)
+                          (push n-next Q))
+                      (push n-next Q)))))))
+          (puthash `(,pid ,eid ,time) rate best-at)))
+      best)))
