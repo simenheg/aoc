@@ -52,3 +52,4 @@
 
 (defun x (point) (car point))
 (defun y (point) (cadr point))
+(defun z (point) (caddr point))
